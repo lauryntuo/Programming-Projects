@@ -1,0 +1,50 @@
+/* 
+ * File:   Stop_In_Dark_Main.c
+ * Author: Lauryn Tuo
+ *
+ * Created on July 31, 2018, 9:35 AM
+ */
+
+#include <stdio.h>
+#include <stdlib.h>
+
+#include "serial.h"
+#include "BOARD.h"
+#include "roach.h"
+#include "timers.h"
+#include "Navigation.h"
+#include "CheckLightSensor.h"
+
+int main(void) {
+    SERIAL_Init();
+    BOARD_Init();
+    Roach_Init();
+    TIMERS_Init();
+
+    char is_in_light = 1;
+    
+    TIMERS_InitTimer(0, 1);
+    while (1) {
+        if (TIMERS_IsTimerExpired(0)) {
+            switch (is_in_light) 
+                case 1: //in light
+                    TIMERS_InitTimer(0, 100);
+                    Forward(-100);
+                    if (CheckLightSensor() == 0) {
+                        is_in_light = 0;
+                    }
+                    break;
+                case 0: //in dark
+              
+                    Stop();
+                    
+                    if (CheckLightSensor()) {
+                        is_in_light = 1;
+                    }
+                    break;
+            }
+        }
+    }
+
+    return (EXIT_SUCCESS);
+}
