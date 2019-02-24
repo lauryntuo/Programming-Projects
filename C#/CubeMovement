@@ -1,0 +1,112 @@
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+
+public class CubeMovement : MonoBehaviour
+{
+    Rigidbody rb;
+    public float height;
+    public float speed;
+    bool grounded;
+
+    public float dashSpeed = 1.0f;
+    public float dashStoppingSpeed = 0.1f;
+    public float maxDashTime = 1.0f;
+    private float currentDashTime;
+    bool hitStopped = false;
+    float startTimeToHitStop = 0;
+    public float timeToHitStop = 0;
+    RaycastHit hitObj;
+
+    void Start()
+    {
+        grounded = true;
+        rb = GetComponent<Rigidbody>();
+        currentDashTime = maxDashTime;
+    }
+
+    //Moving forward, backward, left, right, and jumping
+    void Update()
+    {
+        if (rb.velocity.y == 0f)
+        {
+            grounded = true;
+        }
+        else
+        {
+            grounded = false;
+        }
+        if (Input.GetKey(KeyCode.W) && !Input.GetKey(KeyCode.LeftShift))
+        {
+            transform.position += new Vector3(-speed, 0, 0);
+        }
+        if (Physics.Raycast(transform.position, transform.TransformDirection(Vector3.forward), out hitObj, dashSpeed))
+        {
+            if (Input.GetKey(KeyCode.W))
+            {
+                transform.position += new Vector3(speed, 0, 0);
+            }
+        }   
+        if (Input.GetKey(KeyCode.S))
+        {
+            transform.position += new Vector3(speed, 0, 0);
+        }
+        if (Input.GetKey(KeyCode.A))
+        {
+            transform.position += new Vector3(0, 0, -speed);
+        }
+        if (Input.GetKey(KeyCode.D))
+        {
+            transform.position += new Vector3(0, 0, speed);
+        }
+        if (Input.GetKeyDown(KeyCode.Space) && grounded == true)
+        {
+            rb.AddForce(Vector3.up * height, ForceMode.Impulse);
+        }
+
+        //code for the shift dash
+
+        if (Input.GetKeyDown(KeyCode.LeftShift) && hitStopped == false)
+        {
+            currentDashTime = 0.0f;
+
+        }
+        if (Physics.Raycast(transform.position, transform.TransformDirection(Vector3.forward), out hitObj, dashSpeed * 10))
+        {
+            if (currentDashTime < maxDashTime)
+            {
+                transform.position += new Vector3(-hitObj.distance/10, 0, 0);
+                currentDashTime += dashStoppingSpeed;
+            }
+        }
+
+        else
+        {
+            if (currentDashTime < maxDashTime)
+            {
+                transform.position += new Vector3(-dashSpeed, 0, 0);
+                currentDashTime += dashStoppingSpeed;
+            }
+        }
+        if(Input.GetKeyDown(KeyCode.LeftShift) && hitStopped == false)
+        {
+            hitStopped = true;  
+            startTimeToHitStop = Time.realtimeSinceStartup;
+            Time.timeScale = 0;
+        }
+
+        if(hitStopped){
+            if(Time.realtimeSinceStartup - startTimeToHitStop > timeToHitStop)
+            {
+                Time.timeScale = 1;
+                hitStopped = false;
+            }
+        }
+        if(hitStopped && !grounded)
+        {
+            Time.timeScale = 1;
+        }
+            
+
+    }
+}
