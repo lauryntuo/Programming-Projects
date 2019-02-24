@@ -1,0 +1,45 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include "serial.h"
+#include "BOARD.h"
+#include "roach.h"
+#include "timers.h"
+#include "Navigation.h"
+
+#define T_360 1380 //change as appropriate
+#define T_FOOT 1000 //change as appropriate
+#define MAX_SPEED 100
+
+int main(void) {
+    SERIAL_Init();
+    BOARD_Init();
+    Roach_Init();
+    TIMERS_Init();
+    
+    TIMERS_InitTimer(0,1);
+    char steps_remaining = 8;
+    while (1) {
+        if (TIMERS_IsTimerExpired(0)) {
+            switch (steps_remaining) {
+                case 8:
+                case 6:
+                case 4:
+                case 2:
+                    TIMERS_InitTimer(0, T_FOOT);
+                    Forward(MAX_SPEED);
+                    steps_remaining--;
+                    break;
+                case 7:
+                case 5:
+                case 3:
+                case 1:
+                    TIMERS_InitTimer(0, T_360 / 4);
+                    RotateLeft(MAX_SPEED);
+                    steps_remaining--;
+                    break;
+                case 0:
+                    Stop();
+            }
+        }
+    }
+}
