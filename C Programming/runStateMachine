@@ -1,0 +1,114 @@
+/*
+ * File:   runStateMachine.c
+ * Author: Lauryn Tuo
+ *
+ * Created on July 28, 2016, 12:43 PM
+ */
+
+#include "runStateMachine.h"
+#include "timers.h"
+#include <stdio.h>
+
+void RunStateMachine(event_t currentEvent) {
+    static state_t currentState = GOING_FORWARD;
+    //which state are we in? 
+    //printf("\nState: %d\tEvent: %d \r\n", currentState, currentEvent);
+    switch (currentState) {
+        case GOING_FORWARD:
+        {
+            Forward(MOTORSPEED);
+            switch (currentEvent) {
+                case ENTERED_DARK:
+                    Stop();
+                    currentState = HIDING;
+                    break;
+                case FL_BUMP:
+                    TIMERS_InitTimer(0, TIMERBACK);
+                    //RotateRight(ROTATESPEED);
+                    ArcLeft(ARCSPEEDBACKWARD);
+                    //Reverse(-90);
+                    //TIMERS_InitTimer(1, 2000);
+                    currentState = EVADING;
+                    break;
+                case FR_BUMP:
+                    TIMERS_InitTimer(0, TIMERBACK);
+                    Reverse(-90);
+                    //RotateLeft(ROTATESPEED);
+                    ArcRight(ARCSPEEDBACKWARD);
+                    //TIMERS_InitTimer(1, 2000);
+                    currentState = EVADING;
+                    break;
+                case RL_BUMP:
+                    TIMERS_InitTimer(0, TIMERFORWARD);
+                    //RotateRight(ROTATESPEED);
+                    ArcRight(ARCSPEEDFORWARD);
+                    currentState = GOING_FORWARD;
+                    break;
+                case RR_BUMP:
+                    TIMERS_InitTimer(0, TIMERFORWARD);
+                    //RotateLeft(ROTATESPEED);
+                    ArcLeft(ARCSPEEDFORWARD);
+                    currentState = GOING_FORWARD;
+                    break;
+                case TIME_OUT:
+                    Forward(MOTORSPEED);
+                    currentState = GOING_FORWARD;
+                    break;
+            }
+            break;
+        }
+        case EVADING:
+        {
+            switch (currentEvent) {
+                case ENTERED_DARK:
+                    Stop();
+                    currentState = HIDING;
+                    break;
+                case FL_BUMP:
+                    TIMERS_InitTimer(0, TIMERBACK);
+                    //RotateRight(ROTATESPEED);
+                    ArcLeft(ARCSPEEDBACKWARD);
+                    //Reverse(-90);
+                    currentState = EVADING;
+                    break;
+                case FR_BUMP:
+                    TIMERS_InitTimer(0, TIMERBACK);
+                    //RotateLeft(ROTATESPEED);
+                    ArcRight(ARCSPEEDBACKWARD);
+                    //TIMERS_InitTimer(1, 2000);
+                    //Reverse(-90);
+                    currentState = EVADING;
+                    break;
+                case RL_BUMP:
+                    TIMERS_InitTimer(0, TIMERFORWARD);
+                    //RotateRight(ROTATESPEED);
+                    ArcRight(ARCSPEEDFORWARD);
+                    currentState = GOING_FORWARD;
+                    break;
+                case RR_BUMP:
+                    TIMERS_InitTimer(0, TIMERFORWARD);
+                    //RotateLeft(ROTATESPEED);
+                    ArcLeft(ARCSPEEDFORWARD);
+                    currentState = GOING_FORWARD;
+                    break;
+                case TIME_OUT:
+                    TIMERS_InitTimer(1, 1000);
+                    Forward(MOTORSPEED);
+                    currentState = GOING_FORWARD;
+                    break;
+            }
+            break;
+        }
+        case HIDING:
+        {
+            switch (currentEvent) {
+                case ENTERED_LIGHT:
+                    Forward(MOTORSPEED);
+                    currentState = GOING_FORWARD;
+                    break;
+            }
+            break;
+        }
+    }
+    printf("\nState: %d\tEvent: %d \r\n", currentState, currentEvent);
+}
