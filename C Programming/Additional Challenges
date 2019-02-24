@@ -1,0 +1,62 @@
+/* 
+ * File:   AdditionalChallenges_Lab3_main.c
+ * Author: Lauryn Tuo
+ *
+ * Created on July 27, 2018, 10:14 AM
+ */
+
+#include <stdio.h>
+#include <stdlib.h>
+#include "serial.h"
+#include "BOARD.h"
+#include "roach.h"
+#include "timers.h"
+#include "LightSensor.h"
+#include "Navigation.h"
+#define TIMER_A 0
+#define TIMER_B 1
+#define TIMER_C 2
+#define SPEED_FACTOR 1
+
+int main(int argc, char** argv) {
+    SERIAL_Init();
+    BOARD_Init();
+    Roach_Init();
+    TIMERS_Init();
+    
+   
+    TIMERS_InitTimer(TIMER_A, 1); //short timer for getting light
+    TIMERS_InitTimer(TIMER_B, 1); //long timer for motor rotation if we are in the light
+    TIMERS_InitTimer(TIMER_C, 1);
+    char light = 0;
+    
+    Forward(100 * SPEED_FACTOR);
+    while (1) {
+        if (TIMERS_IsTimerExpired(TIMER_A)) {
+            light = stopInDark();
+            TIMERS_InitTimer(TIMER_A, 100);
+        }
+        if (TIMERS_IsTimerExpired(TIMER_B) && light)
+        {
+            TIMERS_InitTimer(TIMER_B, 2500);
+            RotateLeft(60);
+            TIMERS_InitTimer(TIMER_C, 1000);
+            while (TIMERS_IsTimerActive(TIMER_C))
+            {
+            }
+            Forward(100 * SPEED_FACTOR);
+        } 
+    }
+     
+    
+    TIMERS_InitTimer(TIMER_A, 1); //short timer for getting light
+    
+    Forward(100);
+    while (1) {
+        if (TIMERS_IsTimerExpired(TIMER_A))
+        {
+            TIMERS_InitTimer(TIMER_A, 400);
+            bumpReactions();
+        }
+    }
+}
