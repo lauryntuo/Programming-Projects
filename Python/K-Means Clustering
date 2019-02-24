@@ -1,0 +1,80 @@
+#Load numpy scientific computing package
+import numpy as np   
+
+#Loads the 2d plotting package
+import matplotlib.pyplot as plt 
+
+#Configure matplolib to show results within this browser
+%matplotlib inline
+
+def load_data() :
+    
+    #Normal distribution
+    '''Want to create 3 normal distributions with 30 entries each
+    '''
+    # np.random.normal(average, std deviation, numer of samples)
+    np.random.seed(10)
+    x1 = np.random.normal(10, 3, 30)
+    y1 = np.random.normal(20, 4, 30)
+
+    x2 = np.random.normal(30, 3, 20)
+    y2 = np.random.normal(30, 2.5, 20)
+
+    x3 = np.random.normal(30, 3, 15)
+    y3 = np.random.normal(10, 4, 15)
+
+    x = np.hstack((x1,x2,x3))
+    y = np.hstack((y1,y2,y3))
+
+    #print("X has shape : ", x.shape)
+    #print("Y has shape : ", y.shape)
+    
+    plt.rcParams["figure.figsize"] =[4,4]
+    #Plotting zeroes for distribution a and ones for distribution b
+    # This can be used as a fictitious dataset for cancer detection
+    plt.plot(x, y,'bo')
+    plt.xlabel('Height')
+    plt.ylabel('Weight')
+    plt.axis([0,40,0,40])
+    plt.show()
+    #plt.hist(a,bins=10, normed=1)
+    return(x,y)
+
+def plot_nearest(x,y,nearest,center):
+    plt.rcParams["figure.figsize"] =[4,4]
+    plt.plot(x[nearest[0]], y[nearest[0]],'ro', 
+             x[nearest[1]], y[nearest[1]],'mo',
+             x[nearest[2]], y[nearest[2]],'bo',
+             center[0][0],center[0][1] , 'rx', 
+             center[1][0],center[1][1],'mx', 
+             center[2][0],center[2][1], 'bx')
+    plt.xlabel('Height')
+    plt.ylabel('Weight')
+    plt.axis([0,40,0,40])
+    plt.show()
+    return
+
+def return_nearest(x,y,center,k=3):
+    distance_x = np.zeros(k*x.shape[0]).reshape(k,x.shape[0])
+    distance_y = np.zeros(k*x.shape[0]).reshape(k,x.shape[0])
+    distance_sq =np.zeros(k*x.shape[0]).reshape(k,x.shape[0])
+    for i in range(k):
+        distance_x[i] = x - center[i,0]
+        distance_y[i] = y - center[i,1]
+        distance_sq[i] = (distance_x[i]*distance_x[i])+(distance_y[i]*distance_y[i])
+
+    nearest = distance_sq == distance_sq.min(axis=0)
+    return(nearest)
+
+# Find the new center
+# Note that we had to make a copy of the center array, otherwise 
+# object aliasing causes the "center" numpy array to get updated
+# when new_center is updated.
+
+import copy
+def find_new_center(x,y,nearest, center):
+    new_center = copy.copy(center)
+    new_center[0] = [np.average(x[nearest[0]]), np.average(y[nearest[0]])] 
+    new_center[1] = [np.average(x[nearest[1]]), np.average(y[nearest[1]])] 
+    new_center[2] = [np.average(x[nearest[2]]), np.average(y[nearest[2]])] 
+    return(new_center)
