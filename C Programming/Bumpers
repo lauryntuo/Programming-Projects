@@ -1,0 +1,83 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include "serial.h"
+#include "BOARD.h"
+#include "roach.h"
+#include "timers.h"
+#include "Bumpers2.h"
+
+void evaluateResult(char result)
+{
+    if ((result & 0b00010000)) // a change has occurred
+    {
+        if ((result & 0b0001))
+        {
+            printf("FRONT LEFT BUMPER PRESSED\r\n");
+        }
+        else
+        {
+            printf("FRONT LEFT BUMPER RELEASED\r\n");
+        }
+    }
+    if ((result & 0b00100000))
+    {
+        if ((result & 0b0010))
+        {
+            printf("FRONT RIGHT BUMPER PRESSED\r\n");
+        }
+        else
+        {
+            printf("FRONT RIGHT BUMPER RELEASED\r\n");
+        }
+    }
+    if ((result & 0b01000000))
+    {
+        if ((result & 0b0100))
+        {
+            printf("REAR LEFT BUMPER PRESSED\r\n");
+        }
+        else
+        {
+            printf("REAR LEFT BUMPER RELEASED\r\n");
+        }
+    }
+    if ((result & 0b10000000))
+    {
+        if ((result & 0b1000))
+        {
+            printf("REAR RIGHT BUMPER PRESSED\r\n");
+        }
+        else
+        {
+            printf("REAR RIGHT BUMPER RELEASED\r\n");
+        }
+    }
+}
+char CheckForBumps(void) {
+    static char prevBump;
+    char thisBump = Roach_ReadBumpers();
+    unsigned char result = thisBump;  
+    
+    int i;
+    char bumpOrNot = 0b00000001; //check each of the bumpers for hits 
+    char bumper = 0b00010000; 
+    
+    char thisBit;
+    char prevBit;
+    for (i = 0; i < 4; i++){
+        prevBit = prevBump & bumpOrNot; 
+        thisBit = thisBump & bumpOrNot; 
+        //get if a bumper is on or not
+        //these will be compared to tell if we've pressed or released a bumper
+        
+        if (prevBit != thisBit) {
+            result |= bumper;
+        }
+        
+        bumpOrNot <<= 1;
+        bumper <<= 1;
+    }
+    
+    prevBump = thisBump;
+    return result;
+}
