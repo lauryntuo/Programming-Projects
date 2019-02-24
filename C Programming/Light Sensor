@@ -1,0 +1,73 @@
+/* 
+ * File:   LightSensor.c
+ * Author: Lauryn Tuo
+ *
+ * Created on July 25, 2018, 10:49 AM
+ */
+
+#include <stdio.h>
+#include <stdlib.h>
+#include "serial.h"
+#include "BOARD.h"
+#include "roach.h"
+#include "timers.h"
+#include "LightSensor.h"
+
+#define INVERT_CONSTANT 1023
+#define THRESHOLD 511
+#define HIGH 640
+#define LOW 384
+
+char CheckLightSensor(void)
+{
+    static char previousState, currentState;
+    int reading;
+    previousState = 0;
+    currentState = 0;
+    reading = 0;
+    reading = Roach_LightLevel();    
+    if (previousState == 0)
+    {
+        if (reading <= LOW) // transitioned to light
+        {
+            currentState = 1;
+        }
+        else
+        {
+            currentState = 0; //we haven't transitioned
+        }
+    }
+    else
+    {
+        if (reading >= HIGH) // transitioned to darkness
+        {
+            currentState = 0;
+        }
+        else
+        {
+            currentState = 1; //we haven't transitioned
+        }
+    }
+    setLEDs(reading);
+    previousState = currentState;
+    return currentState;
+}
+
+void setLEDs(int lightReading)
+{
+    int lightLevel, numLED, interval, i, LEDs;
+    interval = INVERT_CONSTANT / 12;
+    lightLevel = INVERT_CONSTANT - lightReading;
+    numLED = lightLevel / interval;
+
+    //Convert the levels to the LED sequence
+    if (numLED != 0) LEDs = 0b000000000001;
+    for (i = 1; i < numLED; i++) {
+            LEDs <<= 1;
+            LEDs++;
+    }
+
+    Roach_LEDSSet(LEDs);
+}
+
+
